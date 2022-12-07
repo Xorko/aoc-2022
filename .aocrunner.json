@@ -92,12 +92,13 @@
     {
       "part1": {
         "solved": false,
-        "result": "1503182",
+        "result": "1619755",
         "attempts": [
           "1407161",
-          "1503182"
+          "1503182",
+          "1619755"
         ],
-        "time": 2.6955
+        "time": 2.2412
       },
       "part2": {
         "solved": false,

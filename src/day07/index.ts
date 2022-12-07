@@ -1,13 +1,44 @@
 import run from "aocrunner";
 
-type ParsedCommand = {
+interface ParsedCommand {
   command: string;
   output: string[];
+}
+
+interface Children {
+  [name: string]: File | Directory;
+}
+
+interface BaseFile {
+  type: "file" | "directory";
+  name: string;
+  size: number;
+}
+
+interface File extends BaseFile {
+  type: "file";
+}
+
+interface Directory extends BaseFile {
+  type: "directory";
+  children: Children;
+  parent: Directory | null;
+}
+
+const root: Directory = {
+  type: "directory",
+  name: "/",
+  children: {},
+  parent: null,
+  size: 0,
 };
+
+let currentDirectory: Directory = root;
+const directoySizes: number[] = [];
 
 const parseInput = (rawInput: string) => {
   return rawInput
-    .split(/^(.*?)\$/gm)
+    .split(/^(.*?)\$/m)
     .filter(Boolean)
     .map((command) => command.trim().split(/\r?\n/))
     .map((commandWithOutput) => ({
@@ -16,48 +47,52 @@ const parseInput = (rawInput: string) => {
     }));
 };
 
-let currentDirectory: string = "/";
-const directories = new Map<string, number>();
-
 const handleCd = (command: string) => {
-  const directory = command.split(" ")[1];
-
-  switch (directory) {
-    case "/":
-      currentDirectory = "/";
-      break;
-    case "..":
-      currentDirectory =
-        currentDirectory.split("/").slice(0, -2).join("/") || "/";
-      break;
-    default:
-      currentDirectory = `${currentDirectory}${directory}/`;
-      break;
+  const path = command.split(" ")[1];
+  if (path === "/") {
+    currentDirectory = root;
+  } else if (path === "..") {
+    if (currentDirectory.parent) {
+      currentDirectory = currentDirectory.parent;
+    }
+  } else {
+    currentDirectory = currentDirectory.children[path] as Directory;
   }
 };
 
-const addDirectorySizeToParents = (directory: string) => {
-  const _parentDirectory = directory.split("/").slice(0, -2).join("/") || "/";
-  const parentDirectory =
-    _parentDirectory !== "/" ? `${_parentDirectory}/` : _parentDirectory;
-
-  if (parentDirectory !== "/") {
-    directories.set(
-      parentDirectory,
-      directories.get(parentDirectory)! + directories.get(directory)!,
-    );
-    addDirectorySizeToParents(parentDirectory);
+const handleLs = (outputLine: string) => {
+  const [size, name] = outputLine.split(" ");
+  if (size === "dir") {
+    const directory: Directory = {
+      type: "directory",
+      name,
+      children: {},
+      parent: currentDirectory,
+      size: 0,
+    };
+    currentDirectory.children[name] = directory;
+  } else {
+    const file: File = {
+      type: "file",
+      name,
+      size: parseInt(size),
+    };
+    currentDirectory.children[name] = file;
   }
 };
 
-const addRootDirsSizeToRoot = () => {
-  const rootDirs = Array.from(directories.keys()).filter((dir) =>
-    dir.match(/^\/\w+\/$/gm),
-  );
-
-  rootDirs.forEach((rootDir) =>
-    directories.set("/", directories.get("/")! + directories.get(rootDir)!),
-  );
+const calculateDirectoriesTotalSize = (directory: Directory): number => {
+  const children = Object.values(directory.children);
+  const childrenTotalSize = children.reduce((totalSize, child) => {
+    if (child.type === "file") {
+      return totalSize + child.size;
+    } else {
+      return totalSize + calculateDirectoriesTotalSize(child);
+    }
+  }, 0);
+  directory.size = childrenTotalSize;
+  directoySizes.push(childrenTotalSize);
+  return childrenTotalSize;
 };
 
 const part1 = (rawInput: string) => {
@@ -67,32 +102,16 @@ const part1 = (rawInput: string) => {
     if (parsedCommand.command.startsWith("cd")) {
       handleCd(parsedCommand.command);
     } else if (parsedCommand.command.startsWith("ls")) {
-      let directorySize = 0;
-      parsedCommand.output.forEach((outputLine) => {
-        const words = outputLine.split(" ");
-        if (words[0] === "dir") {
-          const directoryName = `${currentDirectory}${words[1]}/`;
-          if (!directories.has(directoryName)) {
-            directories.set(directoryName, 0);
-          }
-        } else {
-          directorySize += parseInt(words[0], 10);
-        }
-      });
-
-      directories.set(currentDirectory, directorySize);
+      parsedCommand.output.forEach(handleLs);
     }
   });
 
-  directories.forEach((_, directory) => {
-    addDirectorySizeToParents(directory);
-  });
+  calculateDirectoriesTotalSize(root);
 
-  addRootDirsSizeToRoot();
-
-  return Array.from(directories.values())
-    .filter((size) => size <= 100000)
-    .reduce((acc, size) => acc + size, 0);
+  return directoySizes.reduce(
+    (total, size) => total + (size <= 100000 ? size : 0),
+    0,
+  );
 };
 
 const part2 = (rawInput: string) => {
