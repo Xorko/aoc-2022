@@ -34,7 +34,7 @@ const root: Directory = {
 };
 
 let currentDirectory: Directory = root;
-const directoySizes: number[] = [];
+const directorySizes: number[] = [];
 
 const parseInput = (rawInput: string) => {
   return rawInput
@@ -47,7 +47,7 @@ const parseInput = (rawInput: string) => {
     }));
 };
 
-const handleCd = (command: string) => {
+const processCd = (command: string) => {
   const path = command.split(" ")[1];
   if (path === "/") {
     currentDirectory = root;
@@ -60,7 +60,7 @@ const handleCd = (command: string) => {
   }
 };
 
-const handleLs = (outputLine: string) => {
+const processLs = (outputLine: string) => {
   const [size, name] = outputLine.split(" ");
   if (size === "dir") {
     const directory: Directory = {
@@ -81,109 +81,72 @@ const handleLs = (outputLine: string) => {
   }
 };
 
-const calculateDirectoriesTotalSize = (directory: Directory): number => {
+const calculateDirectoryTotalSize = (directory: Directory): number => {
   const children = Object.values(directory.children);
   const childrenTotalSize = children.reduce((totalSize, child) => {
     if (child.type === "file") {
       return totalSize + child.size;
     } else {
-      return totalSize + calculateDirectoriesTotalSize(child);
+      return totalSize + calculateDirectoryTotalSize(child);
     }
   }, 0);
   directory.size = childrenTotalSize;
-  directoySizes.push(childrenTotalSize);
+  directorySizes.push(childrenTotalSize);
   return childrenTotalSize;
+};
+
+const process = (input: ParsedCommand[]) => {
+  input.forEach((parsedCommand) => {
+    if (parsedCommand.command.startsWith("cd")) {
+      processCd(parsedCommand.command);
+    } else if (parsedCommand.command.startsWith("ls")) {
+      parsedCommand.output.forEach(processLs);
+    }
+  });
+
+  calculateDirectoryTotalSize(root);
 };
 
 const part1 = (rawInput: string) => {
   const input: ParsedCommand[] = parseInput(rawInput);
 
-  input.forEach((parsedCommand) => {
-    if (parsedCommand.command.startsWith("cd")) {
-      handleCd(parsedCommand.command);
-    } else if (parsedCommand.command.startsWith("ls")) {
-      parsedCommand.output.forEach(handleLs);
-    }
-  });
+  process(input);
 
-  calculateDirectoriesTotalSize(root);
-
-  return directoySizes.reduce(
+  return directorySizes.reduce(
     (total, size) => total + (size <= 100000 ? size : 0),
     0,
   );
 };
 
 const part2 = (rawInput: string) => {
-  const input = parseInput(rawInput);
+  const input: ParsedCommand[] = parseInput(rawInput);
 
-  return;
+  process(input);
+
+  const TOTAL_DISK_SPACE = 70000000;
+  const UPDATE_SIZE = 30000000;
+  const spaceAvailable = TOTAL_DISK_SPACE - root.size;
+  const requiredSpace = UPDATE_SIZE - spaceAvailable;
+
+  return Math.min(...directorySizes.filter((size) => size >= requiredSpace));
 };
 
 run({
   part1: {
     tests: [
-      {
-        input: `
-$ cd /
-$ ls
-dir a
-14848514 b.txt
-8504156 c.dat
-dir d
-$ cd a
-$ ls
-dir e
-29116 f
-2557 g
-62596 h.lst
-$ cd e
-$ ls
-584 i
-$ cd ..
-$ cd ..
-$ cd d
-$ ls
-4060174 j
-8033020 d.log
-5626152 d.ext
-7214296 k
-        `,
-        expected: 95437,
-      },
+      // {
+      //   input: ``,
+      //   expected: "",
+      // },
     ],
     solution: part1,
   },
   part2: {
     tests: [
-      //       {
-      //         input: `
-      // $ cd /
-      // $ ls
-      // dir a
-      // 14848514 b.txt
-      // 8504156 c.dat
-      // dir d
-      // $ cd a
-      // $ ls
-      // dir e
-      // 29116 f
-      // 2557 g
-      // 62596 h.lst
-      // $ cd e
-      // $ ls
-      // 584 i
-      // $ cd ..
-      // $ cd ..
-      // $ cd d
-      // $ ls
-      // 4060174 j
-      // 8033020 d.log
-      // 5626152 d.ext
-      // 7214296 k
-      //         `,
-      //         expected: 0,
-      //       },
+      // {
+      //   input: ``,
+      //   expected: "",
+      // },
     ],
     solution: part2,
   },
