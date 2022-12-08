@@ -16,7 +16,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^16.11.6",
-    "aocrunner": "^1.9.5",
+    "aocrunner": "^1.9.6",
     "esbuild": "^0.15.17",
     "prettier": "^2.8.0"
   },

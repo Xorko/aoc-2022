@@ -2,13 +2,13 @@ lockfileVersion: 5.4
 
 specifiers:
   '@types/node': ^16.11.6
-  aocrunner: ^1.9.5
+  aocrunner: ^1.9.6
   esbuild: ^0.15.17
   prettier: ^2.8.0
 
 devDependencies:
   '@types/node': 16.18.4
-  aocrunner: 1.9.5
+  aocrunner: 1.9.6
   esbuild: 0.15.17
   prettier: 2.8.0
 
@@ -80,8 +80,8 @@ packages:
       picomatch: 2.3.1
     dev: true
 
-  /aocrunner/1.9.5:
-    resolution: {integrity: sha512-iRl8taTr5ZswFkkm2595T0xx9oSrAxM2TPj4J/YoRktfqP8bZh9Tsa9siuhhCigLXkgggM3rk4SGrC5iSxaAdA==}
+  /aocrunner/1.9.6:
+    resolution: {integrity: sha512-YD009/Ubd2CH3qXJ3RfYAfaJipVAfZYfJShWRPyLdtHeS2+ob1LiBv03JHD1LI6/SIZNhKo1OEGFci38BxCQLA==}
     engines: {node: '>=16.13.0'}
     hasBin: true
     dependencies:
