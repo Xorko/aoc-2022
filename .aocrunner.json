@@ -140,16 +140,16 @@
     },
     {
       "part1": {
-        "solved": false,
-        "result": null,
+        "solved": true,
+        "result": "15360",
         "attempts": [],
-        "time": null
+        "time": 0.1694
       },
       "part2": {
-        "solved": false,
-        "result": null,
+        "solved": true,
+        "result": "See console output",
         "attempts": [],
-        "time": null
+        "time": 2.313
       }
     },
     {
