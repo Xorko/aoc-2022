@@ -58,6 +58,19 @@ const processRound = (monkeys: Monkey[], worryLevelReduction: boolean) => {
   });
 };
 
+const findMonkeysWithMostInspectedItems = (monkeys: Monkey[], limit = 2) =>
+  monkeys
+    .map((monkey) => monkey.inspectedItems)
+    .sort((a, b) => b - a)
+    .slice(0, limit);
+
+const calculateMonkeyBusinessLevel = (monkeys: Monkey[]) => {
+  const [monkeyWithMostInspectedItems, secondMonkeyWithMostInspectedItems] =
+    findMonkeysWithMostInspectedItems(monkeys);
+
+  return monkeyWithMostInspectedItems * secondMonkeyWithMostInspectedItems;
+};
+
 const processRounds = (
   monkeys: Monkey[],
   numberOfRounds: number,
@@ -91,38 +104,18 @@ const part1 = (rawInput: string) => {
   const monkeys = parseInput(rawInput);
 
   const NUMBER_OF_ROUNDS = 20;
-
   processRounds(monkeys, NUMBER_OF_ROUNDS);
 
-  // Get the two monkeys with the most items inspected
-  const [mostItemsInspected, secondMostItemsInspected] = monkeys
-    .map((monkey) => monkey.inspectedItems)
-    .sort((a, b) => b - a)
-    .slice(0, 2);
-
-  return mostItemsInspected * secondMostItemsInspected;
+  return calculateMonkeyBusinessLevel(monkeys);
 };
 
 const part2 = (rawInput: string) => {
   const monkeys = parseInput(rawInput);
 
   const NUMBER_OF_ROUNDS = 20;
+  processRounds(monkeys, NUMBER_OF_ROUNDS, false);
 
-  const numberOfItemsInspected = processRounds(
-    monkeys,
-    NUMBER_OF_ROUNDS,
-    false,
-  );
-
-  console.log(numberOfItemsInspected);
-
-  // Get the two monkeys with the most items inspected
-  const [mostItemsInspected, secondMostItemsInspected] = monkeys
-    .map((monkey) => monkey.inspectedItems)
-    .sort((a, b) => b - a)
-    .slice(0, 2);
-
-  return mostItemsInspected * secondMostItemsInspected;
+  return calculateMonkeyBusinessLevel(monkeys);
 };
 
 run({
