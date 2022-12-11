@@ -34,7 +34,7 @@ const calculateOperation = (operation: Operation): number => {
   }
 };
 
-const processRound = (monkeys: Monkey[], worryLevelReduction: boolean) => {
+const processRound = (monkeys: Monkey[], worryLevelReductionBy3: boolean) => {
   monkeys.forEach((monkey) => {
     while (monkey.items.length) {
       const item = monkey.items.shift()!;
@@ -42,12 +42,18 @@ const processRound = (monkeys: Monkey[], worryLevelReduction: boolean) => {
       // Inspect the item
       const operation = parseOperation(monkey.operation, item);
       let newWorryLevel = Math.floor(calculateOperation(operation));
-      if (worryLevelReduction) {
+      if (worryLevelReductionBy3) {
         newWorryLevel = Math.floor(newWorryLevel / 3);
+      } else {
+        const roundModulo = monkeys.reduce(
+          (acc, monkey) => acc * monkey.test[0],
+          1,
+        );
+        newWorryLevel = newWorryLevel % roundModulo;
       }
       monkey.inspectedItems++;
 
-      // If the new item worry value is divisible by the test number, throw to the next monkey
+      // If the new item worry level is divisible by the test number, throw to the next monkey
       const [testNumber, ifTrue, ifFalse] = monkey.test;
       if (newWorryLevel % testNumber === 0) {
         monkeys[ifTrue].items.push(newWorryLevel);
@@ -112,7 +118,7 @@ const part1 = (rawInput: string) => {
 const part2 = (rawInput: string) => {
   const monkeys = parseInput(rawInput);
 
-  const NUMBER_OF_ROUNDS = 20;
+  const NUMBER_OF_ROUNDS = 10_000;
   processRounds(monkeys, NUMBER_OF_ROUNDS, false);
 
   return calculateMonkeyBusinessLevel(monkeys);
@@ -194,5 +200,5 @@ Monkey 3:
     solution: part2,
   },
   trimTestInputs: true,
-  onlyTests: true,
+  onlyTests: false,
 });
