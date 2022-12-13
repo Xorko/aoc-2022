@@ -1,16 +1,16 @@
 import run from "aocrunner";
-import { add, multiply } from "../utils/reducer-utils.js";
+import { add } from "../utils/reducer-utils.js";
 
 type PairWithIndex = [any[], number];
 
 const compare = (a: any, b: any): number => {
-  if ([a, b].every(Number.isInteger)) {
+  if (Number.isInteger(a) && Number.isInteger(b)) {
     return a - b;
+  } else if (Number.isInteger(a)) {
+    return compare([a], b);
+  } else if (Number.isInteger(b)) {
+    return compare(a, [b]);
   }
-
-  // Make sure a and b are arrays
-  a = [a].flat();
-  b = [b].flat();
 
   for (let i = 0; i < Math.min(a.length, b.length); i++) {
     const result = compare(a[i], b[i]);
@@ -29,9 +29,9 @@ const parseInput = (rawInput: string) =>
     .map((line) => line.split(/\r?\n/).map((signal) => JSON.parse(signal)));
 
 const part1 = (rawInput: string) => {
-  const input = parseInput(rawInput);
+  const packets = parseInput(rawInput);
 
-  return input
+  return packets
     .map((pair, i) => [pair, i + 1] as PairWithIndex)
     .filter(([pair]) => compare(pair[0], pair[1]) < 0)
     .map(([, i]) => i)
@@ -39,26 +39,21 @@ const part1 = (rawInput: string) => {
 };
 
 const part2 = (rawInput: string) => {
-  const input = parseInput(rawInput);
-  const dividerPackets = [[[2]], [[6]]];
+  const dividers = [[[2]], [[6]]];
+  const packets = [...parseInput(rawInput).flat(), ...dividers];
 
-  const orderedPairs = [...input, ...dividerPackets]
-    .map((pair, i) => [pair, i + 1] as PairWithIndex)
-    .filter(([pair]) => compare(pair[0], pair[1]) < 0);
+  const sortedPackets = packets.sort(compare);
 
-  return dividerPackets
-    .map((divider) => {
-      const dividerIndex = orderedPairs.findIndex(
-        ([pair]) => compare(pair, divider) === 0,
-      );
+  parseInput(rawInput).forEach((packet, i) => console.log(i, packet));
 
-      if (dividerIndex === -1) {
-        throw new Error("Divider not found");
-      }
+  return dividers.reduce((acc, divider) => {
+    const dividerIndex = sortedPackets.indexOf(divider) + 1;
 
-      return dividerIndex + 1;
-    })
-    .reduce(multiply, 1);
+    if (dividerIndex === 0) {
+      throw new Error("Divider not found");
+    }
+    return acc * dividerIndex;
+  }, 1);
 };
 
 run({
