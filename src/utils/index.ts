@@ -30,4 +30,5 @@
  *
  */
 export * from "./array-utils.js";
+export * from "./reducer-utils.js";
 export * from "./string-utils.js";
